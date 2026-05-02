@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HireArc — Find Work That Fits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0e0e0f;
+    --bg2:       #141415;
+    --bg3:       #1c1c1e;
+    --border:    rgba(255,255,255,0.08);
+    --amber:     #f5a623;
+    --amber-dim: #c47d10;
+    --text:      #f0ede8;
+    --muted:     #888580;
+    --faint:     #3a3835;
+    --white:     #ffffff;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    height: 68px;
+    background: rgba(14,14,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--white);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .nav-logo span {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--amber);
+    border-radius: 50%;
+    margin-bottom: 2px;
+  }
+
+  .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+  .btn-ghost {
+    padding: 8px 20px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-ghost:hover { border-color: var(--amber); color: var(--amber); }
+
+  .btn-primary {
+    padding: 8px 22px;
+    background: var(--amber);
+    border: none;
+    color: #0e0e0f;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .btn-primary:hover { background: #ffb93e; transform: translateY(-1px); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-glow-2 {
+    position: absolute;
+    bottom: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(245,166,35,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.25);
+    color: var(--amber);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    width: fit-content;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--amber);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 10vw, 140px);
+    line-height: 0.92;
+    letter-spacing: 2px;
+    color: var(--white);
+    max-width: 900px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero-title .accent { color: var(--amber); }
+  .hero-title .outline { -webkit-text-stroke: 2px var(--white); color: transparent; }
+
+  .hero-sub {
+    margin-top: 32px;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.7;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-actions {
+    margin-top: 48px;
+    display: flex; gap: 16px; align-items: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-hero {
+    padding: 16px 36px;
+    background: var(--amber);
+    border: none;
+    color: #0e0e0f;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 0 40px rgba(245,166,35,0.25);
+  }
+
+  .btn-hero:hover { background: #ffb93e; transform: translateY(-2px); box-shadow: 0 0 60px rgba(245,166,35,0.4); }
+
+  .btn-hero-outline {
+    padding: 16px 36px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-hero-outline:hover { border-color: var(--amber); color: var(--amber); }
+
+  .hero-stats {
+    margin-top: 80px;
+    display: flex; gap: 48px;
+    animation: fadeUp 0.6s 0.4s ease both;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    width: fit-content;
+  }
+
+  .stat-item { display: flex; flex-direction: column; gap: 4px; }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    color: var(--white);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .stat-num span { color: var(--amber); }
+  .stat-label { font-size: 13px; color: var(--muted); font-weight: 400; letter-spacing: 0.3px; }
+
+  /* ── MARQUEE ── */
+  .marquee-section {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 0;
+    overflow: hidden;
+    background: var(--bg2);
+  }
+
+  .marquee-track {
+    display: flex; gap: 0;
+    animation: marquee 25s linear infinite;
+    width: max-content;
+  }
+
+  .marquee-item {
+    display: flex; align-items: center; gap: 24px;
+    padding: 0 40px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--faint);
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .marquee-item .dot { width: 4px; height: 4px; background: var(--amber); border-radius: 50%; flex-shrink: 0; }
+
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── SECTIONS ── */
+  section { padding: 120px 48px; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 1;
+    color: var(--white);
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .section-sub { font-size: 16px; color: var(--muted); font-weight: 300; max-width: 480px; line-height: 1.7; }
+
+  /* ── HOW IT WORKS ── */
+  .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 80px; align-items: start; }
+
+  .how-steps { display: flex; flex-direction: column; gap: 0; }
+
+  .step {
+    display: flex; gap: 24px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: padding-left 0.3s;
+  }
+
+  .step:first-child { padding-top: 0; }
+  .step:hover { padding-left: 8px; }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--faint);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 52px;
+    transition: color 0.3s;
+  }
+
+  .step:hover .step-num { color: var(--amber); }
+
+  .step-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .step-desc { font-size: 14px; color: var(--muted); line-height: 1.7; font-weight: 300; }
+
+  .how-visual {
+    position: sticky; top: 100px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    min-height: 400px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden;
+  }
+
+  .how-visual::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(245,166,35,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .mock-job {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: border-color 0.3s;
+  }
+
+  .mock-job:hover { border-color: rgba(245,166,35,0.3); }
+  .mock-job-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .mock-job-meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+  .mock-tag { background: rgba(245,166,35,0.1); color: var(--amber); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+
+  /* ── ROLES ── */
+  .roles-section { background: var(--bg2); }
+
+  .roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 64px; }
+
+  .role-card {
+    padding: 48px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+  }
+
+  .role-card:hover { border-color: var(--amber); transform: translateY(-4px); }
+
+  .role-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(245,166,35,0.05) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .role-card:hover::before { opacity: 1; }
+
+  .role-card-candidate { background: var(--bg3); }
+  .role-card-recruiter { background: #0a0a0b; }
+
+  .role-icon {
+    width: 52px; height: 52px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 28px;
+  }
+
+  .role-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--white); letter-spacing: 1px; margin-bottom: 12px; }
+  .role-desc { font-size: 14px; color: var(--muted); line-height: 1.7; font-weight: 300; margin-bottom: 32px; }
+  .role-perks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 36px; }
+
+  .perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+
+  .perk-check {
+    width: 16px; height: 16px;
+    background: rgba(245,166,35,0.15);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    color: var(--amber);
+  }
+
+  .role-cta { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--amber); text-decoration: none; }
+  .role-cta-arrow { transition: transform 0.2s; display: inline-block; }
+  .role-card:hover .role-cta-arrow { transform: translateX(4px); }
+
+  /* ── JOBS PREVIEW ── */
+  .jobs-preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 64px; }
+
+  .job-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.3s, transform 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .job-card:hover { border-color: rgba(245,166,35,0.4); transform: translateY(-3px); }
+
+  .job-card-company { font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+  .job-card-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 16px; line-height: 1.3; }
+  .job-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+
+  .tag { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 500; font-family: 'DM Mono', monospace; }
+  .tag-type { background: rgba(255,255,255,0.05); color: var(--muted); }
+  .tag-remote { background: rgba(245,166,35,0.08); color: var(--amber); }
+  .tag-salary { background: rgba(255,255,255,0.04); color: var(--muted); }
+
+  .job-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--border); }
+  .job-card-time { font-size: 12px; color: var(--muted); }
+  .job-card-apply { font-size: 12px; font-weight: 600; color: var(--amber); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+
+  /* skeleton loading */
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+  }
+
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  .skel-company { height: 12px; width: 60%; margin-bottom: 12px; }
+  .skel-title { height: 20px; width: 90%; margin-bottom: 8px; }
+  .skel-title2 { height: 20px; width: 70%; margin-bottom: 20px; }
+  .skel-tag { height: 20px; width: 30%; display: inline-block; }
+  .skel-footer { height: 1px; background: var(--border); margin: 24px 0 16px; }
+  .skel-meta { height: 12px; width: 50%; }
+
+  /* ── CTA ── */
+  .cta-section { padding: 80px 48px; background: var(--bg2); border-top: 1px solid var(--border); }
+
+  .cta-inner { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: center; }
+
+  .cta-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 4vw, 56px); color: var(--white); letter-spacing: 1px; line-height: 1.05; }
+  .cta-title .amber { color: var(--amber); }
+  .cta-sub { font-size: 15px; color: var(--muted); font-weight: 300; margin-top: 12px; }
+  .cta-buttons { display: flex; gap: 12px; flex-direction: column; }
+
+  /* ── FOOTER ── */
+  footer { padding: 40px 48px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: var(--muted); text-decoration: none; }
+  .footer-links { display: flex; gap: 32px; }
+  .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-copy { font-size: 12px; color: var(--faint); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── SEARCH BAR ── */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 6px 6px 20px;
+    gap: 12px;
+    max-width: 560px;
+    margin-top: 36px;
+    transition: border-color 0.2s;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  .search-bar:focus-within { border-color: rgba(245,166,35,0.4); }
+
+  .search-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  .search-bar input::placeholder { color: var(--muted); }
+
+  .search-bar button {
+    padding: 10px 20px;
+    background: var(--amber);
+    border: none;
+    color: #0e0e0f;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .search-bar button:hover { background: #ffb93e; }
+
+  .search-pills {
+    display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .search-pill {
+    padding: 5px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    font-weight: 400;
+  }
+
+  .search-pill:hover { color: var(--amber); border-color: rgba(245,166,35,0.3); }
+
+  /* logged-in nav variant */
+  .nav-user {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .nav-avatar {
+    width: 34px; height: 34px;
+    background: var(--amber);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    color: #0e0e0f;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-signout {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-signout:hover { border-color: rgba(224,85,85,0.4); color: #e05555; }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 20px 60px; }
+    section { padding: 80px 20px; }
+    .how-grid, .roles-grid, .jobs-preview-grid { grid-template-columns: 1fr; }
+    .cta-inner { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 20px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">HireArc <span></span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#jobs">Browse jobs</a></li>
+    <li><a href="#roles">For recruiters</a></li>
+  </ul>
+  <div class="nav-actions" id="navActions">
+    <!-- Filled dynamically based on auth state -->
+    <a href="login.html" class="btn-ghost">Log in</a>
+    <a href="signup.html" class="btn-primary">Get started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-2"></div>
+
+  <div class="hero-tag">South Africa's job platform</div>
+
+  <h1 class="hero-title">
+    Find work<br>
+    that <span class="accent">fits</span><br>
+    <span class="outline">perfectly.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Connect with top companies across South Africa. Whether you're hiring or job hunting — HireArc makes it fast, smart, and direct.
+  </p>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Job title, company, or keyword…"/>
+    <button id="searchBtn">Search Jobs</button>
+  </div>
+
+  <div class="search-pills">
+    <span class="search-pill" onclick="fillSearch('Software Engineer')">Software Engineer</span>
+    <span class="search-pill" onclick="fillSearch('Data Analyst')">Data Analyst</span>
+    <span class="search-pill" onclick="fillSearch('UX Designer')">UX Designer</span>
+    <span class="search-pill" onclick="fillSearch('Johannesburg')">Johannesburg</span>
+    <span class="search-pill" onclick="fillSearch('Remote')">Remote</span>
+  </div>
+
+  <div class="hero-actions">
+    <a href="signup.html" class="btn-hero" id="heroCTA">Start your search</a>
+    <a href="signup.html?role=recruiter" class="btn-hero-outline">Post a job →</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item"><div class="stat-num">12<span>K+</span></div><div class="stat-label">Active listings</div></div>
+    <div class="stat-item"><div class="stat-num">4<span>K+</span></div><div class="stat-label">Companies hiring</div></div>
+    <div class="stat-item"><div class="stat-num">86<span>%</span></div><div class="stat-label">Placement rate</div></div>
+    <div class="stat-item"><div class="stat-num">9</div><div class="stat-label">Provinces covered</div></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section" aria-hidden="true">
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="dot"></span>Software Engineering</div>
+    <div class="marquee-item"><span class="dot"></span>Data Science</div>
+    <div class="marquee-item"><span class="dot"></span>Product Design</div>
+    <div class="marquee-item"><span class="dot"></span>Finance & Accounting</div>
+    <div class="marquee-item"><span class="dot"></span>Marketing</div>
+    <div class="marquee-item"><span class="dot"></span>Operations</div>
+    <div class="marquee-item"><span class="dot"></span>Human Resources</div>
+    <div class="marquee-item"><span class="dot"></span>Sales</div>
+    <div class="marquee-item"><span class="dot"></span>Software Engineering</div>
+    <div class="marquee-item"><span class="dot"></span>Data Science</div>
+    <div class="marquee-item"><span class="dot"></span>Product Design</div>
+    <div class="marquee-item"><span class="dot"></span>Finance & Accounting</div>
+    <div class="marquee-item"><span class="dot"></span>Marketing</div>
+    <div class="marquee-item"><span class="dot"></span>Operations</div>
+    <div class="marquee-item"><span class="dot"></span>Human Resources</div>
+    <div class="marquee-item"><span class="dot"></span>Sales</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label reveal">Process</div>
+  <div class="section-title reveal">How HireArc works</div>
+  <p class="section-sub reveal">Three steps. No noise. Just results.</p>
+
+  <div class="how-grid reveal">
+    <div class="how-steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">Create your profile</div>
+          <div class="step-desc">Sign up in under 2 minutes. Add your CV, skills, and what you're looking for. No long forms, no fluff.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">Browse & apply</div>
+          <div class="step-desc">Filter by role, location, salary, and type. Apply with a single click — your profile does the talking.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-title">Track your applications</div>
+          <div class="step-desc">See every job you've applied to, its current status, and get email confirmations instantly. Stay in control.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="how-visual">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:2px;margin-bottom:20px;text-transform:uppercase;">Your dashboard</div>
+        <div class="mock-job">
+          <div class="mock-job-title">Senior Frontend Developer</div>
+          <div class="mock-job-meta"><span>TechNova · Cape Town</span> <span class="mock-tag">Applied</span></div>
+        </div>
+        <div class="mock-job">
+          <div class="mock-job-title">Data Engineer</div>
+          <div class="mock-job-meta"><span>DataSphere · Remote</span> <span class="mock-tag" style="background:rgba(100,200,100,0.1);color:#6dc872;">Shortlisted</span></div>
+        </div>
+        <div class="mock-job">
+          <div class="mock-job-title">Product Designer</div>
+          <div class="mock-job-meta"><span>Stitch · Johannesburg</span> <span class="mock-tag" style="background:rgba(255,255,255,0.06);color:var(--muted);">Pending</span></div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;background:var(--amber);border-radius:50%;"></div>
+        3 active applications
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- JOBS PREVIEW -->
+<section id="jobs" style="background:var(--bg2);">
+  <div class="section-label reveal">Opportunities</div>
+  <div class="section-title reveal">Latest openings</div>
+  <p class="section-sub reveal">Live jobs updated in real time from verified companies.</p>
+
+  <div class="jobs-preview-grid" id="jobsGrid">
+    <!-- Skeleton placeholders while loading -->
+    <div class="job-card"><div class="skeleton skel-company"></div><div class="skeleton skel-title"></div><div class="skeleton skel-title2"></div><div class="skel-footer"></div><div class="skeleton skel-meta"></div></div>
+    <div class="job-card"><div class="skeleton skel-company"></div><div class="skeleton skel-title"></div><div class="skeleton skel-title2"></div><div class="skel-footer"></div><div class="skeleton skel-meta"></div></div>
+    <div class="job-card"><div class="skeleton skel-company"></div><div class="skeleton skel-title"></div><div class="skeleton skel-title2"></div><div class="skel-footer"></div><div class="skeleton skel-meta"></div></div>
+    <div class="job-card"><div class="skeleton skel-company"></div><div class="skeleton skel-title"></div><div class="skeleton skel-title2"></div><div class="skel-footer"></div><div class="skeleton skel-meta"></div></div>
+    <div class="job-card"><div class="skeleton skel-company"></div><div class="skeleton skel-title"></div><div class="skeleton skel-title2"></div><div class="skel-footer"></div><div class="skeleton skel-meta"></div></div>
+    <div class="job-card"><div class="skeleton skel-company"></div><div class="skeleton skel-title"></div><div class="skeleton skel-title2"></div><div class="skel-footer"></div><div class="skeleton skel-meta"></div></div>
+  </div>
+
+  <div style="text-align:center;margin-top:48px;" class="reveal">
+    <a href="signup.html" class="btn-hero" id="browseAllBtn">Browse all jobs</a>
+  </div>
+</section>
+
+<!-- ROLES -->
+<section id="roles">
+  <div class="section-label reveal">Who's it for</div>
+  <div class="section-title reveal">Built for both sides</div>
+  <p class="section-sub reveal">Whether you're looking for your next role or building your next team — HireArc has you covered.</p>
+
+  <div class="roles-grid">
+    <a href="signup.html" class="role-card role-card-candidate reveal">
+      <div class="role-icon">🎯</div>
+      <div class="role-title">For Candidates</div>
+      <div class="role-desc">Find, apply, and track opportunities. Get email confirmations and never lose track of where you stand.</div>
+      <div class="role-perks">
+        <div class="perk"><div class="perk-check">✓</div> Instant application tracking</div>
+        <div class="perk"><div class="perk-check">✓</div> Email confirmation on every apply</div>
+        <div class="perk"><div class="perk-check">✓</div> Filter by salary, role, and location</div>
+        <div class="perk"><div class="perk-check">✓</div> One-click applications</div>
+      </div>
+      <span class="role-cta">Sign up as candidate <span class="role-cta-arrow">→</span></span>
+    </a>
+
+    <a href="signup.html?role=recruiter" class="role-card role-card-recruiter reveal" style="transition-delay:0.15s">
+      <div class="role-icon">📋</div>
+      <div class="role-title">For Recruiters</div>
+      <div class="role-desc">Post jobs, review applicants, and manage your pipeline — all from one clean dashboard.</div>
+      <div class="role-perks">
+        <div class="perk"><div class="perk-check">✓</div> Post unlimited job listings</div>
+        <div class="perk"><div class="perk-check">✓</div> View full candidate profiles & CVs</div>
+        <div class="perk"><div class="perk-check">✓</div> Update application statuses</div>
+        <div class="perk"><div class="perk-check">✓</div> Shortlist and manage candidates</div>
+      </div>
+      <span class="role-cta">Sign up as recruiter <span class="role-cta-arrow">→</span></span>
+    </a>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section reveal">
+  <div class="cta-inner">
+    <div>
+      <div class="cta-title">Ready to find your<br><span class="amber">next opportunity?</span></div>
+      <div class="cta-sub">Join thousands of South African professionals on HireArc.</div>
+    </div>
+    <div class="cta-buttons">
+      <a href="signup.html" class="btn-hero" style="text-align:center;" id="ctaSignup">Get started — it's free</a>
+      <a href="login.html" class="btn-ghost" style="text-align:center;">Already have an account</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="index.html" class="footer-logo">HIREARC</a>
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">© 2025 HireArc. Built for South Africa.</div>
+</footer>
+
+<!-- Supabase client -->
+<script src="supabase-client.js"></script>
+
+<script>
+  // ── Scroll reveal ────────────────────────────────────────
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ── Search pills ─────────────────────────────────────────
+  function fillSearch(term) {
+    document.getElementById('searchInput').value = term;
+    document.getElementById('searchInput').focus();
+  }
+
+  // ── Search button → redirect to jobs with query param ───
+  document.getElementById('searchBtn').addEventListener('click', () => {
+    const q = document.getElementById('searchInput').value.trim();
+    const dest = q ? `signup.html?q=${encodeURIComponent(q)}` : 'signup.html';
+    window.location.href = dest;
+  });
+
+  document.getElementById('searchInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('searchBtn').click();
+  });
+
+  // ── Nav: auth-aware ──────────────────────────────────────
+  async function initNav() {
+    const user = await getCurrentUser();
+    const navActions = document.getElementById('navActions');
+
+    if (user) {
+      const { data: profile } = await getProfile(user.id);
+      const initials = (profile?.full_name || user.email)
+        .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+      const dashUrl = profile?.role === 'recruiter'
+        ? 'recruiter-dashboard.html'
+        : 'candidate-dashboard.html';
+
+      navActions.innerHTML = `
+        <a href="${dashUrl}" class="nav-avatar" title="Go to dashboard">${initials}</a>
+        <button class="btn-signout" onclick="signOut()">Sign out</button>
+      `;
+
+      // Update CTA buttons to go to dashboard
+      const heroCTA = document.getElementById('heroCTA');
+      if (heroCTA) { heroCTA.textContent = 'Go to dashboard'; heroCTA.href = dashUrl; }
+
+      const ctaSignup = document.getElementById('ctaSignup');
+      if (ctaSignup) { ctaSignup.textContent = 'Go to dashboard'; ctaSignup.href = dashUrl; }
+    }
+  }
+
+  // ── Load live jobs from Supabase ─────────────────────────
+  async function loadJobs() {
+    const grid = document.getElementById('jobsGrid');
+
+    // Fallback static jobs shown while DB is empty / during dev
+    const FALLBACK_JOBS = [
+      { company: 'Takealot Group', title: 'Senior Software Engineer — Backend', type: 'Full-time', location: 'Remote', salary: 'R65–90k/mo', posted: '2 days ago' },
+      { company: 'Standard Bank',  title: 'Data Analyst — Risk & Compliance',   type: 'Full-time', location: 'Johannesburg', salary: null,          posted: '3 days ago' },
+      { company: 'Allan Gray',     title: 'Junior .NET Developer',               type: 'Full-time', location: 'Cape Town',    salary: 'R30–42k/mo', posted: '5 days ago' },
+      { company: 'Rand Merchant Bank', title: 'UX/UI Designer — Digital Products', type: 'Contract', location: 'Hybrid',    salary: null,          posted: '1 week ago' },
+      { company: 'Shoprite Holdings',  title: 'Business Intelligence Developer',   type: 'Full-time', location: null,        salary: 'R45–60k/mo', posted: '1 week ago' },
+      { company: 'FNB Digital',        title: 'Cloud Infrastructure Engineer',     type: 'Full-time', location: 'Remote',   salary: 'R70–95k/mo', posted: '2 weeks ago' },
+    ];
+
+    function renderJobs(jobs) {
+      if (!jobs || jobs.length === 0) { renderFallback(); return; }
+
+      grid.innerHTML = jobs.map((job, i) => {
+        const remoteLabel = job.is_remote || (job.location && job.location.toLowerCase() === 'remote') ? 'Remote' : null;
+        const loc = job.location && job.location.toLowerCase() !== 'remote' ? job.location : null;
+        const posted = job.created_at ? timeAgo(new Date(job.created_at)) : '—';
+
+        return `
+          <div class="job-card reveal" style="transition-delay:${(i % 3) * 0.1}s">
+            <div class="job-card-company">${escHtml(job.company)}</div>
+            <div class="job-card-title">${escHtml(job.title)}</div>
+            <div class="job-card-tags">
+              ${job.type ? `<span class="tag tag-type">${escHtml(job.type)}</span>` : ''}
+              ${remoteLabel ? `<span class="tag tag-remote">${remoteLabel}</span>` : ''}
+              ${loc ? `<span class="tag tag-salary">${escHtml(loc)}</span>` : ''}
+              ${job.salary ? `<span class="tag tag-salary">${escHtml(job.salary)}</span>` : ''}
+            </div>
+            <div class="job-card-footer">
+              <span class="job-card-time">Posted ${posted}</span>
+              <a href="signup.html" class="job-card-apply">Apply →</a>
+            </div>
+          </div>`;
+      }).join('');
+
+      // re-observe new reveal elements
+      document.querySelectorAll('#jobsGrid .reveal').forEach(el => observer.observe(el));
+    }
+
+    function renderFallback() {
+      grid.innerHTML = FALLBACK_JOBS.map((job, i) => `
+        <div class="job-card reveal" style="transition-delay:${(i % 3) * 0.1}s">
+          <div class="job-card-company">${escHtml(job.company)}</div>
+          <div class="job-card-title">${escHtml(job.title)}</div>
+          <div class="job-card-tags">
+            <span class="tag tag-type">${escHtml(job.type)}</span>
+            ${job.location ? `<span class="tag tag-remote">${escHtml(job.location)}</span>` : ''}
+            ${job.salary   ? `<span class="tag tag-salary">${escHtml(job.salary)}</span>`   : ''}
+          </div>
+          <div class="job-card-footer">
+            <span class="job-card-time">Posted ${escHtml(job.posted)}</span>
+            <a href="signup.html" class="job-card-apply">Apply →</a>
+          </div>
+        </div>`).join('');
+
+      document.querySelectorAll('#jobsGrid .reveal').forEach(el => observer.observe(el));
+    }
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('jobs')
+        .select('id, title, company, location, type, salary, is_remote, created_at')
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error || !data || data.length === 0) {
+        renderFallback();
+      } else {
+        renderJobs(data);
+      }
+    } catch (_) {
+      renderFallback();
+    }
+  }
+
+  // ── Utilities ────────────────────────────────────────────
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function timeAgo(date) {
+    const secs = Math.floor((Date.now() - date) / 1000);
+    if (secs < 60)    return 'just now';
+    if (secs < 3600)  return `${Math.floor(secs / 60)} min ago`;
+    if (secs < 86400) return `${Math.floor(secs / 3600)} hr ago`;
+    const days = Math.floor(secs / 86400);
+    if (days === 1)   return 'yesterday';
+    if (days < 7)     return `${days} days ago`;
+    if (days < 14)    return '1 week ago';
+    if (days < 30)    return `${Math.floor(days / 7)} weeks ago`;
+    return `${Math.floor(days / 30)} months ago`;
+  }
+
+  // ── Boot ─────────────────────────────────────────────────
+  initNav();
+  loadJobs();
+</script>
+</body>
+</html>

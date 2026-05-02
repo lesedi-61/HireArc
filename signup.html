@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HireArc — Sign Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<!-- Supabase CDN - load before app scripts -->
+<<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+</body>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0e0e0f;
+    --bg2:       #141415;
+    --bg3:       #1c1c1e;
+    --border:    rgba(255,255,255,0.08);
+    --border-h:  rgba(245,166,35,0.35);
+    --amber:     #f5a623;
+    --amber-dim: #c47d10;
+    --text:      #f0ede8;
+    --muted:     #888580;
+    --faint:     #3a3835;
+    --white:     #ffffff;
+    --error:     #e05555;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .left-panel {
+    position: relative;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px;
+    overflow: hidden;
+  }
+
+  .left-panel-glow {
+    position: absolute;
+    top: -150px; left: -150px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(245,166,35,0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .left-panel-glow-2 {
+    position: absolute;
+    bottom: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(245,166,35,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .left-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 80% at 30% 50%, black 20%, transparent 80%);
+  }
+
+  .left-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--white);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .left-logo span {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--amber);
+    border-radius: 50%;
+    margin-bottom: 3px;
+  }
+
+  .left-content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 0;
+  }
+
+  .left-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 20px;
+  }
+
+  .left-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 5vw, 76px);
+    line-height: 0.95;
+    color: var(--white);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+  }
+
+  .left-headline .accent { color: var(--amber); }
+  .left-headline .outline {
+    -webkit-text-stroke: 1.5px rgba(255,255,255,0.5);
+    color: transparent;
+  }
+
+  .left-sub { font-size: 15px; font-weight: 300; color: var(--muted); line-height: 1.7; max-width: 340px; margin-bottom: 48px; }
+
+  .left-testimonial {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--amber);
+    border-radius: 8px;
+    padding: 20px 24px;
+    max-width: 380px;
+  }
+
+  .testimonial-text { font-size: 14px; color: var(--muted); font-style: italic; font-weight: 300; line-height: 1.7; margin-bottom: 12px; }
+  .testimonial-author { display: flex; align-items: center; gap: 10px; }
+
+  .testimonial-avatar {
+    width: 32px; height: 32px;
+    background: var(--amber);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    color: #0e0e0f;
+    flex-shrink: 0;
+  }
+
+  .testimonial-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .testimonial-role { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  .left-bottom { position: relative; z-index: 2; display: flex; gap: 32px; }
+  .mini-stat { display: flex; flex-direction: column; gap: 3px; }
+
+  .mini-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--white);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .mini-stat-num span { color: var(--amber); }
+
+  .mini-stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .right-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: var(--bg);
+  }
+
+  .form-container {
+    width: 100%;
+    max-width: 420px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .form-header { margin-bottom: 40px; }
+
+  .form-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,166,35,0.08);
+    border: 1px solid rgba(245,166,35,0.2);
+    color: var(--amber);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .form-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 44px;
+    letter-spacing: 1px;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .form-sub { font-size: 14px; color: var(--muted); font-weight: 300; }
+  .form-sub a { color: var(--amber); text-decoration: none; font-weight: 500; }
+  .form-sub a:hover { text-decoration: underline; }
+
+  .role-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 28px;
+    gap: 4px;
+  }
+
+  .role-btn {
+    padding: 9px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .role-btn.active {
+    background: var(--bg3);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .field { margin-bottom: 20px; }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .field-wrap { position: relative; }
+
+  .field-wrap .field-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--faint);
+    font-size: 16px;
+    pointer-events: none;
+    transition: color 0.2s;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 13px 14px 13px 42px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .field input::placeholder { color: var(--faint); }
+  .field input:focus { border-color: var(--border-h); background: var(--bg3); }
+  .field-wrap:focus-within .field-icon { color: var(--amber); }
+
+  .field-wrap .eye-btn {
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--faint);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+
+  .field-wrap .eye-btn:hover { color: var(--muted); }
+
+  .field-error { font-size: 12px; color: var(--error); margin-top: 6px; display: none; }
+  .field.error input { border-color: var(--error); }
+  .field.error .field-error { display: block; }
+
+  .strength-bar { display: flex; gap: 4px; margin-top: 8px; }
+
+  .strength-segment {
+    flex: 1; height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+
+  .strength-label {
+    font-size: 11px;
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    color: var(--muted);
+    height: 14px;
+  }
+
+  .tos-text { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+  .tos-text a { color: var(--amber); text-decoration: none; }
+  .tos-text a:hover { text-decoration: underline; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: var(--amber);
+    border: none;
+    border-radius: 8px;
+    color: #0e0e0f;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(245,166,35,0.2);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    letter-spacing: 0.3px;
+    margin-bottom: 24px;
+  }
+
+  .btn-submit:hover { background: #ffb93e; transform: translateY(-1px); box-shadow: 0 0 50px rgba(245,166,35,0.35); }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+  .btn-submit .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(14,14,15,0.3);
+    border-top-color: #0e0e0f;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  .btn-submit.loading .btn-text { display: none; }
+  .btn-submit.loading .spinner { display: block; }
+
+  .divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text { font-size: 12px; color: var(--faint); font-family: 'DM Mono', monospace; letter-spacing: 1px; }
+
+  .social-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    text-decoration: none;
+    margin-bottom: 12px;
+  }
+
+  .social-btn:hover { border-color: rgba(255,255,255,0.15); background: var(--bg3); }
+  .social-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .login-link { text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .login-link a { color: var(--amber); text-decoration: none; font-weight: 500; }
+  .login-link a:hover { text-decoration: underline; }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .alert.error   { background: rgba(224,85,85,0.08);  border: 1px solid rgba(224,85,85,0.25);  color: #e05555; display: flex; }
+  .alert.success { background: rgba(109,200,114,0.08); border: 1px solid rgba(109,200,114,0.25); color: #6dc872; display: flex; }
+
+  .confirm-box {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 32px 0;
+    gap: 16px;
+  }
+
+  .confirm-box.show { display: flex; }
+
+  .confirm-icon { font-size: 48px; }
+
+  .confirm-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--white);
+    letter-spacing: 1px;
+  }
+
+  .confirm-sub { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 300px; }
+
+  @keyframes spin    { to { transform: rotate(360deg); } }
+  @keyframes fadeUp  { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 860px) {
+    body { grid-template-columns: 1fr; }
+    .left-panel { display: none; }
+    .right-panel { padding: 48px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="left-panel">
+  <div class="left-grid-bg"></div>
+  <div class="left-panel-glow"></div>
+  <div class="left-panel-glow-2"></div>
+
+  <a href="index.html" class="left-logo">HireArc <span></span></a>
+
+  <div class="left-content">
+    <div class="left-eyebrow">Join the movement</div>
+    <div class="left-headline">
+      Build your<br>
+      <span class="accent">future</span><br>
+      with confidence.
+    </div>
+    <p class="left-sub">
+      Create your account in seconds and connect with the right roles, teams, and hiring opportunities.
+    </p>
+
+    <div class="left-testimonial">
+      <p class="testimonial-text">"I signed up and had my profile noticed within hours — HireArc made it effortless to stand out."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">ML</div>
+        <div>
+          <div class="testimonial-name">Mila Lopez</div>
+          <div class="testimonial-role">Product Designer · Berlin</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="left-bottom">
+    <div class="mini-stat"><div class="mini-stat-num">12<span>K+</span></div><div class="mini-stat-label">Active jobs</div></div>
+    <div class="mini-stat"><div class="mini-stat-num">4<span>K+</span></div><div class="mini-stat-label">Companies</div></div>
+    <div class="mini-stat"><div class="mini-stat-num">86<span>%</span></div><div class="mini-stat-label">Placement rate</div></div>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="form-container">
+
+    <div id="formSection">
+      <div class="form-header">
+        <div class="form-tag">Sign up</div>
+        <div class="form-title">Create your HireArc account</div>
+        <p class="form-sub">Already have an account? <a href="login.html">Log in</a></p>
+      </div>
+
+      <div class="role-toggle" id="roleToggle">
+        <button class="role-btn active" data-role="candidate" onclick="setRole('candidate', this)">Job Seeker</button>
+        <button class="role-btn" data-role="recruiter" onclick="setRole('recruiter', this)">Recruiter</button>
+      </div>
+
+      <div class="alert" id="formAlert">
+        <span id="alertIcon">⚠</span>
+        <span id="alertMsg">Please fill in all required fields.</span>
+      </div>
+
+      <form id="signupForm" novalidate>
+        <div class="field" id="nameField">
+          <label for="name">Full name</label>
+          <div class="field-wrap">
+            <span class="field-icon">👤</span>
+            <input type="text" id="name" placeholder="Your full name" autocomplete="name"/>
+          </div>
+          <div class="field-error">Please enter your name.</div>
+        </div>
+
+        <div class="field" id="emailField">
+          <label for="email">Email address</label>
+          <div class="field-wrap">
+            <span class="field-icon">✉</span>
+            <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+          </div>
+          <div class="field-error">Please enter a valid email address.</div>
+        </div>
+
+        <div class="field" id="passwordField">
+          <label for="password">Password</label>
+          <div class="field-wrap">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="password" placeholder="Create a password (min 8 chars)" autocomplete="new-password"/>
+            <button type="button" class="eye-btn" id="eyeBtn" onclick="togglePassword()" title="Show password">👁</button>
+          </div>
+          <div class="field-error">Password must be at least 8 characters.</div>
+          <div class="strength-bar">
+            <div class="strength-segment" id="s1"></div>
+            <div class="strength-segment" id="s2"></div>
+            <div class="strength-segment" id="s3"></div>
+            <div class="strength-segment" id="s4"></div>
+          </div>
+          <div class="strength-label" id="strengthLabel"></div>
+        </div>
+
+        <div class="field" id="confirmField">
+          <label for="confirmPassword">Confirm password</label>
+          <div class="field-wrap">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="confirmPassword" placeholder="Re-enter your password" autocomplete="new-password"/>
+          </div>
+          <div class="field-error">Passwords do not match.</div>
+        </div>
+
+        <p class="tos-text">By creating an account, you agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span class="btn-text">Create account</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">or continue with</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <button class="social-btn" id="googleBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="login-link">
+        Already signed up? <a href="login.html">Log in to your account</a>
+      </div>
+    </div>
+
+    <!-- Confirm email notice (shown after signup) -->
+    <div class="confirm-box" id="confirmBox">
+      <div class="confirm-icon">📧</div>
+      <div class="confirm-title">Check your inbox</div>
+      <p class="confirm-sub" id="confirmSub">We've sent a confirmation link to your email. Click it to activate your account.</p>
+      <a href="login.html" class="btn-submit" style="text-decoration:none;margin-bottom:0;">Go to login</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- Supabase client -->
+<script src="supabase-client.js"></script>
+
+<script>
+  let currentRole = 'candidate';
+
+  function setRole(role, btn) {
+    currentRole = role;
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function togglePassword() {
+    const input = document.getElementById('password');
+    const btn   = document.getElementById('eyeBtn');
+    if (input.type === 'password') { input.type = 'text';     btn.textContent = '🙈'; }
+    else                           { input.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('formAlert');
+    document.getElementById('alertMsg').textContent = msg;
+    el.className = 'alert ' + type;
+  }
+
+  function hideAlert() {
+    document.getElementById('formAlert').className = 'alert';
+  }
+
+  function validateEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+  function setLoading(btn, on) {
+    btn.disabled = on;
+    btn.classList.toggle('loading', on);
+  }
+
+  // ── password strength ────────────────────────────────────
+  const COLORS = { 1: '#e05555', 2: '#e09a23', 3: '#d4c84a', 4: '#6dc872' };
+  const LABELS = { 1: 'Weak',    2: 'Fair',    3: 'Good',    4: 'Strong'  };
+
+  function getStrength(pw) {
+    let score = 0;
+    if (pw.length >= 8)  score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return Math.min(4, Math.max(1, Math.ceil(score * 4 / 5)));
+  }
+
+  document.getElementById('password').addEventListener('input', () => {
+    const pw    = document.getElementById('password').value;
+    const label = document.getElementById('strengthLabel');
+    if (!pw) {
+      [1,2,3,4].forEach(i => { document.getElementById('s' + i).style.background = ''; });
+      label.textContent = '';
+      return;
+    }
+    const lvl = getStrength(pw);
+    [1,2,3,4].forEach(i => {
+      document.getElementById('s' + i).style.background = i <= lvl ? COLORS[lvl] : 'var(--border)';
+    });
+    label.textContent = LABELS[lvl];
+    label.style.color = COLORS[lvl];
+  });
+
+  // ── if already logged in, redirect ───────────────────────
+  (async () => {
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        const { data: profile } = await getProfile(user.id);
+        if (profile) {
+          window.location.href = profile.role === 'recruiter'
+            ? 'recruiter-dashboard.html'
+            : 'candidate-dashboard.html';
+        }
+      }
+    } catch (err) {
+      console.error('[Page Load] Auth check failed:', err);
+    }
+  })();
+
+  // ── sign-up form ─────────────────────────────────────────
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+
+    try {
+      const name            = document.getElementById('name').value.trim();
+      const email           = document.getElementById('email').value.trim();
+      const password        = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      const nameFld    = document.getElementById('nameField');
+      const emailFld   = document.getElementById('emailField');
+      const passFld    = document.getElementById('passwordField');
+      const confirmFld = document.getElementById('confirmField');
+      const btn        = document.getElementById('submitBtn');
+
+      // ── validation ───────────────────────────────────────
+      let valid = true;
+      [nameFld, emailFld, passFld, confirmFld].forEach(f => f.classList.remove('error'));
+
+      if (!name)                                             { nameFld.classList.add('error');    valid = false; }
+      if (!validateEmail(email))                             { emailFld.classList.add('error');   valid = false; }
+      if (password.length < 8)                               { passFld.classList.add('error');    valid = false; }
+      if (!confirmPassword || password !== confirmPassword)  { confirmFld.classList.add('error'); valid = false; }
+
+      if (!valid) {
+        showAlert('Please check the highlighted fields before continuing.');
+        return;
+      }
+
+      setLoading(btn, true);
+
+      // ── call signUp (handles both auth + profile insert) ─
+      await signUp(email, password, {
+  full_name: name,
+  role: currentRole,
+});
+
+      setLoading(btn, false);
+
+      // ── success: redirect to login ──────────────────────
+      window.location.href = 'login.html';
+
+    } catch (err) {
+      setLoading(document.getElementById('submitBtn'), false);
+      console.error('[Signup Form] Exception:', err);
+      showAlert(err.message || 'An unexpected error occurred. Please check the browser console.');
+    }
+  });
+
+  // ── Google OAuth ─────────────────────────────────────────
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      console.error('[Google Auth] Exception:', err);
+      showAlert('Google sign-in failed. Please try again.');
+    }
+  });
+
+  // ── clear errors on input ────────────────────────────────
+  ['name', 'email', 'password', 'confirmPassword'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const fldId = id === 'confirmPassword' ? 'confirmField' : id + 'Field';
+      document.getElementById(fldId)?.classList.remove('error');
+      hideAlert();
+    });
+  });
+
+  // ── pre-select role from URL param ───────────────────────
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('role') === 'recruiter') {
+    setRole('recruiter', document.querySelector('[data-role="recruiter"]'));
+  }
+</script>
+</body>
+</html>
