@@ -365,7 +365,19 @@ Job IDs from the Remotive API are integers, but Supabase stores them as strings.
 - All Supabase calls should handle errors explicitly and show a toast to the user
 
 ---
+##Preview Images
 
+<p align="center">
+  <img src="h1.png" alt="Landing page" width="48%">
+  <img src="h2.png" alt="Login page" width="48%">
+</p>
+<p align="center">
+  <img src="h3.png" alt="Candidate dashboard" width="48%">
+  <img src="h4.png" alt="Recruiter dashboard" width="48%">
+</p>
+<p align="center">
+  <img src="h5.png" alt="Job pipeline" width="48%">
+</p>
 ## Licence
 
 MIT — free to use, modify, and distribute.
